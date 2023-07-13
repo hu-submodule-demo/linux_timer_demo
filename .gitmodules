@@ -1,0 +1,3 @@
+[submodule "linux_timer"]
+	path = linux_timer
+	url = https://github.com/hu-submodule-1/linux_timer.git
