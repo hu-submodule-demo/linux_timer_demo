@@ -13,17 +13,56 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "linux_timer.h"
 
-static void test_timer1_cb(linux_timer_t *linux_timer)
+/**
+ * @brief  获取当前毫秒时间
+ * @param  msec: 输出参数, 获取到的毫秒时间
+ * @return true : 成功
+ * @return false: 失败
+ */
+bool get_current_msec(uint64_t *msec)
 {
-    printf("this is %s, user_data: %d\n", __FUNCTION__, *(uint8_t *)linux_timer->user_data);
+    struct timeval tv = {0};
+    // 获取到的秒
+    uint64_t sec = 0;
+    // 获取到的微秒
+    uint64_t usec = 0;
+
+    if (!msec)
+    {
+        return false;
+    }
+
+    if (0 != gettimeofday(&tv, NULL))
+    {
+        return false;
+    }
+
+    sec = tv.tv_sec;
+    usec = tv.tv_usec;
+
+    *msec = ((sec * 1000) + (usec / 1000));
+
+    return true;
 }
 
-static void test_timer2_cb(linux_timer_t *linux_timer)
+static void test_timer1_cb(const linux_timer_t *linux_timer)
 {
-    printf("this is %s\n", __FUNCTION__);
+    uint64_t current_msec = 0;
+    get_current_msec(&current_msec);
+
+    printf("[%ld] this is %s, user_data: %d\n", current_msec, __FUNCTION__, *(uint8_t *)linux_timer->user_data);
+}
+
+static void test_timer2_cb(const linux_timer_t *linux_timer)
+{
+    uint64_t current_msec = 0;
+    get_current_msec(&current_msec);
+
+    printf("[%ld] this is %s\n", current_msec, __FUNCTION__);
 }
 
 /**
@@ -38,7 +77,12 @@ int main(int argc, char *argv[])
     uint8_t user_data = 10;
 
     linux_timer_t test_timer1 = {0};
+
+    uint64_t current_msec = 0;
+    get_current_msec(&current_msec);
+    printf("[%ld] create timer1\n", current_msec);
     linux_timer_create(&test_timer1, test_timer1_cb, 1000, &user_data);
+    linux_timer_ready(&test_timer1);
     linux_timer_set_repeat_count(&test_timer1, 5);
 
     linux_timer_t test_timer2 = {0};
