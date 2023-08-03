@@ -88,6 +88,16 @@ int main(int argc, char *argv[])
     linux_timer_t test_timer2 = {0};
     linux_timer_create(&test_timer2, test_timer2_cb, 1000, NULL);
 
+    sleep(3);
+    get_current_msec(&current_msec);
+    printf("[%ld] pause timer1\n", current_msec);
+    linux_timer_pause(&test_timer2);
+
+    sleep(3);
+    get_current_msec(&current_msec);
+    printf("[%ld] resume timer1\n", current_msec);
+    linux_timer_resume(&test_timer2);
+
     while (true)
     {
         sleep(1);
